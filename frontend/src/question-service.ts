@@ -1,7 +1,8 @@
-export interface Question {
+export type QuestionKey = "either" | "or";
+export type QuestionKeys<T> = Record<QuestionKey, T>;
+
+export interface Question extends QuestionKeys<string> {
   questionId: number;
-  either: string;
-  or: string;
 }
 
 export interface Answer {
@@ -12,10 +13,7 @@ export interface Answer {
 export interface Result {
   question: Question;
   answer: string;
-  distribution: {
-    either: number;
-    or: number;
-  };
+  distribution: QuestionKeys<number>;
 }
 
 const apiUrl = "http://localhost:8080/api";

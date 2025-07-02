@@ -14,20 +14,24 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
-record Question(Integer questionId, String either, String or) {
+interface WithQuestionId {
+	Integer questionId();
+}
+
+record Question(Integer questionId, String either, String or) implements WithQuestionId {
 };
 
-record Answer(Integer questionId, String answer) {
+record Answer(Integer questionId, String answer) implements WithQuestionId {
 };
 
-record Distribution(Integer questionId, Integer either, Integer or) {
+record Distribution(Integer questionId, Integer either, Integer or) implements WithQuestionId {
 };
 
 record Result(Question question, String answer, Distribution distribution) {
 };
 
 @RestController
-@CrossOrigin(origins = "*") // TODO: remove this
+@CrossOrigin(origins = "*") // TODO: Implement frontend proxy for development and remove this.
 public class QuestionController {
 	public final ArrayList<Question> questions;
 	public final ArrayList<Distribution> distributions;
@@ -87,19 +91,19 @@ public class QuestionController {
 		return ResponseEntity.ok(question.get());
 	}
 
+	public static <T extends WithQuestionId> T findByQuestionId(ArrayList<T> items, Integer questionId) {
+		return items.stream()
+				.filter(question -> question.questionId().equals(questionId))
+				.findFirst()
+				.get();
+	}
+
 	@PostMapping("/api/answer")
 	public Result postAnswer(HttpServletRequest request, @RequestBody Answer answer) {
 		Integer questionId = answer.questionId();
 
-		Question foundQuestion = this.questions.stream()
-				.filter(question -> question.questionId().equals(questionId))
-				.findFirst()
-				.get();
-
-		Distribution foundDistribution = this.distributions.stream()
-				.filter(distribution -> distribution.questionId().equals(questionId))
-				.findFirst()
-				.get();
+		Question foundQuestion = findByQuestionId(this.questions, questionId);
+		Distribution foundDistribution = findByQuestionId(this.distributions, questionId);
 
 		Integer distributionIndex = this.distributions.indexOf(foundDistribution);
 

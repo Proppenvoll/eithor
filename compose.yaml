@@ -1,0 +1,20 @@
+services:
+  eithor-frontend-dev:
+    image: node:22-slim
+    network_mode: host
+    container_name: eithor-frontend-dev
+    command: sleep infinity
+    init: true
+    working_dir: /eithor-frontend
+    volumes:
+      - ./frontend:/eithor-frontend
+
+  eithor-backend-dev:
+    image: bellsoft/liberica-openjdk-debian:21
+    network_mode: host
+    container_name: eithor-backend-dev
+    command: sleep infinity
+    init: true
+    working_dir: /eithor-backend
+    volumes:
+      - ./backend:/eithor-backend

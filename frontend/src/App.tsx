@@ -6,6 +6,7 @@ import {
   type Answer,
   type Question,
   type Result,
+  type QuestionKey,
 } from "./question-service";
 import Button from "./components/button";
 import { ReactLogo } from "./assets/react-logo";
@@ -15,30 +16,30 @@ function assertNever(value: never): never {
   throw new Error(`never assertion faild for value: ${value}`);
 }
 
-type QuestionKeys = keyof Result["question"];
-
 function ResultBarPart({
   result,
   eitherOrOr,
 }: {
   result: Result;
-  eitherOrOr: QuestionKeys;
+  eitherOrOr: QuestionKey;
 }) {
   const distributionOutcome: "winner" | "loser" | "tie" = useMemo(() => {
-    const otherSelectionKey: QuestionKeys =
+    const otherSelectionKey: QuestionKey =
       eitherOrOr === "either" ? "or" : "either";
+
     const myDistriburtionValue = result.distribution[eitherOrOr];
     const otherDistributionValue = result.distribution[otherSelectionKey];
+
     if (myDistriburtionValue > otherDistributionValue) {
       return "winner";
     }
+
     if (myDistriburtionValue === otherDistributionValue) {
       return "tie";
     }
+
     return "loser";
   }, [eitherOrOr, result.distribution]);
-
-  const isMajoritySelection = "";
 
   const growAndShrinkStyle =
     eitherOrOr === "either"
@@ -50,9 +51,6 @@ function ResultBarPart({
           flexGrow: result.distribution.or,
           flexShrink: result.distribution.either,
         };
-
-  const isMajority = result.distribution.either > result.distribution.or;
-  // const barClass =
 
   const emoji = useMemo(() => {
     switch (distributionOutcome) {
@@ -92,7 +90,6 @@ function ResultBarPart({
   }
 
   function isYourSelection() {
-    console.log(result);
     return result.answer === result.question[eitherOrOr];
   }
 
@@ -117,71 +114,6 @@ function ResultBar({ result }: { result: Result }) {
     </div>
   );
 }
-// function ResultBar({ result }: { result: Result }) {
-//   return (
-//     <div className="w-full mt-4 flex overflow-hidden">
-//       <div
-//         className="size-full text-center min-w-fit"
-//         style={{
-//           flexGrow: result.distribution.either,
-//           flexShrink: result.distribution.or,
-//         }}
-//       >
-//         <div
-//           className={
-//             result.distribution.either > result.distribution.or
-//               ? "bg-green-500 rounded-l p-2"
-//               : "bg-red-500 rounded-l p-2"
-//           }
-//         >
-//           {result.question.either} ({result.distribution.either})
-//         </div>
-//         {result.answer === result.question.either && (
-//           <div className="mt-2">
-//             <div>⬆️</div>
-//             <div className="">
-//               You{" "}
-//               {result.distribution.either > result.distribution.or
-//                 ? "😌"
-//                 : "🙄"}
-//             </div>
-//           </div>
-//         )}
-//       </div>
-
-//       <ResultBarPart result={result} eitherOrOr="either"></ResultBarPart>
-//       <ResultBarPart result={result} eitherOrOr="or"></ResultBarPart>
-//       <div
-//         className="size-full text-center min-w-fit"
-//         style={{
-//           flexGrow: result.distribution.or,
-//           flexShrink: result.distribution.either,
-//         }}
-//       >
-//         <div
-//           className={
-//             result.distribution.or > result.distribution.either
-//               ? "bg-green-500"
-//               : "bg-red-500"
-//           }
-//         >
-//           {result.question.or} ({result.distribution.or})
-//         </div>
-//         {result.answer === result.question.or && (
-//           <div className="mt-1">
-//             <div>⬆️</div>
-//             <div className="">
-//               You{" "}
-//               {result.distribution.or > result.distribution.either
-//                 ? "😌"
-//                 : "🙄"}
-//             </div>
-//           </div>
-//         )}
-//       </div>
-//     </div>
-//   );
-// }
 
 function App() {
   const [question, setQuestion] = useState<Question>();
@@ -204,7 +136,10 @@ function App() {
 
   async function restart() {
     const question = await startOver();
-    setQuestion(question);
+
+    if (question) {
+      setQuestion(question);
+    }
   }
 
   useEffect(() => {
@@ -255,7 +190,7 @@ function App() {
             ) : (
               <div>
                 <div>
-                  It look's like you have completed all Questions 🎉! Thank you
+                  It look's like you have completed all questions 🎉! Thank you
                   for participating!
                 </div>
                 <Button onClick={restart} className="mt-4">
